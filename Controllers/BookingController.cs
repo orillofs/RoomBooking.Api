@@ -28,7 +28,7 @@ public class BookingController : ControllerBase
         var booking = await _bookingService.GetBookingByIdAsync(id);
         if (booking is null)
         {
-            return NotFound();
+            return NotFound(new { Message = $"Booking with id {id} was not found." });
         }
 
         return Ok(booking);
@@ -37,6 +37,11 @@ public class BookingController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] BookingRequest booking)
     {
+        if (booking is null)
+        {
+            return BadRequest(new { Message = "Booking request payload is required." });
+        }
+
         var created = await _bookingService.CreateBookingAsync(booking);
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
@@ -46,13 +51,13 @@ public class BookingController : ControllerBase
     {
         if (booking is null)
         {
-            return BadRequest();
+            return BadRequest(new { Message = "Booking update payload is required." });
         }
 
         var updated = await _bookingService.UpdateBookingAsync(id, booking);
         if (!updated)
         {
-            return NotFound();
+            return NotFound(new { Message = $"Booking with id {id} was not found." });
         }
 
         return NoContent();
@@ -64,7 +69,7 @@ public class BookingController : ControllerBase
         var deleted = await _bookingService.DeleteBookingAsync(id);
         if (!deleted)
         {
-            return NotFound();
+            return NotFound(new { Message = $"Booking with id {id} was not found." });
         }
 
         return NoContent();
