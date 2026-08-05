@@ -28,7 +28,7 @@ public class BookingController : ControllerBase
         var booking = await _bookingService.GetBookingByIdAsync(id);
         if (booking is null)
         {
-            return NotFound(new { Message = $"Booking with id {id} was not found." });
+            return NotFound(new { Message = $"Booking with this id `{id}` was not found." });
         }
 
         return Ok(booking);
