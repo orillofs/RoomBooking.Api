@@ -1,8 +1,8 @@
 using System;
 
-namespace RoomBooking.Api.Models;
+namespace RoomBooking.Api.Models.Entities;
 
-public class UserRole
+public class Room
 {
     public int Id { get; set; }
     public string Name { get; set; } = "";

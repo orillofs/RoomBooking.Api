@@ -1,6 +1,6 @@
 using System;
 using Microsoft.EntityFrameworkCore;
-using RoomBooking.Api.Models;
+using RoomBooking.Api.Models.Entities;
 
 namespace RoomBooking.Api.Data;
 
