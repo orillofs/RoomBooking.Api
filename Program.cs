@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using RoomBooking.Api.Data;
+using RoomBooking.Api.Repositories.Booking;
+using RoomBooking.Api.Services.Booking;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -11,8 +13,8 @@ builder.Services.AddOpenApi();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddScoped<RoomBooking.Api.Repositories.Booking.IBookingRepository, RoomBooking.Api.Repositories.Booking.BookingRepository>();
-builder.Services.AddScoped<RoomBooking.Api.Services.Booking.IBookingService, RoomBooking.Api.Services.Booking.BookingService>();
+builder.Services.AddScoped<IBookingRepository, BookingRepository>();
+builder.Services.AddScoped<IBookingService, BookingService>();
 
 var app = builder.Build();
 

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using RoomBooking.Api.Data;
 using RoomBooking.Api.Models.DTOs;
-using RoomBooking.Api.Models.Entities;
+using BookingEntity = RoomBooking.Api.Models.Entities.Booking;
 
 namespace RoomBooking.Api.Repositories.Booking;
 
@@ -13,7 +14,7 @@ public class BookingRepository : IBookingRepository
         _context = context;
     }
 
-    private static BookingResponse MapToResponse(Booking booking) => new()
+    private static BookingResponse MapToResponse(BookingEntity booking) => new()
     {
         Id = booking.Id,
         UserId = booking.UserId,
@@ -22,7 +23,7 @@ public class BookingRepository : IBookingRepository
         EndDate = booking.EndDate
     };
 
-    private static Booking MapToEntity(BookingRequest dto) => new()
+    private static BookingEntity MapToEntity(BookingRequest dto) => new()
     {
         UserId = dto.UserId,
         RoomId = dto.RoomId,
