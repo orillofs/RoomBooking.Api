@@ -5,6 +5,7 @@
 
 # dotenv files
 .env
+CLAUDE.md
 
 # User-specific files
 *.rsuser
