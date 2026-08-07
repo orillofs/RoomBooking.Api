@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using RoomBooking.Api.Middlewares;
 using RoomBooking.Api.Models.DTOs;
 using RoomBooking.Api.Services.Booking;
 
@@ -28,7 +29,7 @@ public class BookingController : ControllerBase
         var booking = await _bookingService.GetBookingByIdAsync(id);
         if (booking is null)
         {
-            return NotFound(new { Message = $"Booking with this id `{id}` was not found." });
+            return NotFound(ErrorHandler.NotFound(id, "Booking"));
         }
 
         return Ok(booking);
@@ -40,6 +41,13 @@ public class BookingController : ControllerBase
         if (booking is null)
         {
             return BadRequest(new { Message = "Booking request payload is required." });
+        }
+
+        ValidateDates(booking);
+
+        if (!ModelState.IsValid)
+        {
+            return ValidationProblem(ModelState);
         }
 
         var created = await _bookingService.CreateBookingAsync(booking);
@@ -54,10 +62,17 @@ public class BookingController : ControllerBase
             return BadRequest(new { Message = "Booking update payload is required." });
         }
 
+        ValidateDates(booking);
+
+        if (!ModelState.IsValid)
+        {
+            return ValidationProblem(ModelState);
+        }
+
         var updated = await _bookingService.UpdateBookingAsync(id, booking);
         if (!updated)
         {
-            return NotFound(new { Message = $"Booking with id {id} was not found." });
+            return NotFound(ErrorHandler.NotFound(id, "Booking"));
         }
 
         return NoContent();
@@ -69,9 +84,19 @@ public class BookingController : ControllerBase
         var deleted = await _bookingService.DeleteBookingAsync(id);
         if (!deleted)
         {
-            return NotFound(new { Message = $"Booking with id {id} was not found." });
+            return NotFound(ErrorHandler.NotFound(id, "Booking"));
         }
 
         return NoContent();
+    }
+
+    private void ValidateDates(BookingRequest booking)
+    {
+        if (booking.StartDate >= booking.EndDate)
+        {
+            ModelState.AddModelError(
+                nameof(BookingRequest.EndDate),
+                "EndDate must be after StartDate.");
+        }
     }
 }
