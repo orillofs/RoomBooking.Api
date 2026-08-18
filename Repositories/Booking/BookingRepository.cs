@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using RoomBooking.Api.Auth;
 using RoomBooking.Api.Data;
 using RoomBooking.Api.Models.DTOs;
 using BookingEntity = RoomBooking.Api.Models.Entities.Booking;
@@ -24,21 +25,27 @@ public class BookingRepository : IBookingRepository
         Version = booking.Version
     };
 
-    private static BookingEntity MapToEntity(BookingRequest dto) => new()
+    private static BookingEntity MapToEntity(BookingRequest dto, int callerId) => new()
     {
-        UserId = dto.UserId,
+        UserId = callerId,
         RoomId = dto.RoomId,
         StartDate = dto.StartDate,
         EndDate = dto.EndDate
     };
 
-    public async Task<IEnumerable<BookingResponse>> GetAllAsync()
+    public async Task<IEnumerable<BookingResponse>> GetAllAsync(CurrentUser caller)
     {
-        var bookings = await _context.Bookings
+        var query = _context.Bookings
             .Include(b => b.User)
             .Include(b => b.Room)
-            .AsNoTracking()
-            .ToListAsync();
+            .AsNoTracking();
+
+        if (!caller.IsAdmin)
+        {
+            query = query.Where(b => b.UserId == caller.Id);
+        }
+
+        var bookings = await query.ToListAsync();
 
         return bookings.Select(MapToResponse);
     }
@@ -54,9 +61,9 @@ public class BookingRepository : IBookingRepository
         return booking is null ? null : MapToResponse(booking);
     }
 
-    public async Task<BookingResponse> AddAsync(BookingRequest bookingRequest)
+    public async Task<BookingResponse> AddAsync(BookingRequest bookingRequest, int callerId)
     {
-        var booking = MapToEntity(bookingRequest);
+        var booking = MapToEntity(bookingRequest, callerId);
         _context.Bookings.Add(booking);
         await _context.SaveChangesAsync();
 
@@ -76,7 +83,8 @@ public class BookingRepository : IBookingRepository
             _context.Entry(booking).Property("Version").OriginalValue = expectedVersion.Value;
         }
 
-        booking.UserId = bookingRequest.UserId;
+        // The owner is never changed by an update; ownership comes from the
+        // authenticated caller and was already checked by the service.
         booking.RoomId = bookingRequest.RoomId;
         booking.StartDate = bookingRequest.StartDate;
         booking.EndDate = bookingRequest.EndDate;
@@ -102,9 +110,13 @@ public class BookingRepository : IBookingRepository
         return true;
     }
 
-    public Task<bool> ExistsAsync(int id)
+    public async Task<int?> GetOwnerIdAsync(int id)
     {
-        return _context.Bookings.AnyAsync(b => b.Id == id);
+        var booking = await _context.Bookings
+            .AsNoTracking()
+            .FirstOrDefaultAsync(b => b.Id == id);
+
+        return booking?.UserId;
     }
 
     public Task SaveChangesAsync()
