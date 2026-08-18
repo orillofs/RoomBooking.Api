@@ -1,4 +1,4 @@
-using RoomBooking.Api.Auth;
+using RoomBooking.Api.Authentication;
 using RoomBooking.Api.Models.DTOs;
 using RoomBooking.Api.Repositories.Booking;
 using RoomBooking.Api.Services.Booking;

@@ -65,4 +65,13 @@ internal static class ErrorHandler
         Type = "https://tools.ietf.org/html/rfc9110#section-13.1.1",
         Detail = "An If-Match header with the last known ETag is required for this request."
     };
+
+    /// <summary>401 — the caller's credentials are missing or invalid.</summary>
+    public static ProblemDetails Unauthorized(string detail) => new()
+    {
+        Status = StatusCodes.Status401Unauthorized,
+        Title = "Unauthorized",
+        Type = "https://tools.ietf.org/html/rfc9110#section-15.5.2",
+        Detail = detail
+    };
 }

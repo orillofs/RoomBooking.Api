@@ -5,13 +5,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using RoomBooking.Api.Data;
 
-namespace RoomBooking.Api.Auth;
+namespace RoomBooking.Api.Authentication;
 
 /// <summary>
 /// Development-only authentication scheme. Maps a bearer token to a seeded user
 /// via the <c>DevAuth:Tokens</c> configuration section and produces a
-/// ClaimsPrincipal carrying the user's id, email, and role. Replaces real
-/// authentication during training; not for production use.
+/// ClaimsPrincipal carrying the user's id, email, and role. Serves as a dev-only
+/// fallback next to the real JWT scheme; not for production use.
 /// </summary>
 public class DevAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
