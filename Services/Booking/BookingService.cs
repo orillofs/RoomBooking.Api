@@ -27,14 +27,14 @@ public class BookingService : IBookingService
         return _repository.AddAsync(booking);
     }
 
-    public async Task<bool> UpdateBookingAsync(int id, BookingRequest booking)
+    public async Task<bool> UpdateBookingAsync(int id, BookingRequest booking, uint? expectedVersion = null)
     {
         if (!await _repository.ExistsAsync(id))
         {
             return false;
         }
 
-        var updated = await _repository.UpdateAsync(id, booking);
+        var updated = await _repository.UpdateAsync(id, booking, expectedVersion);
         if (!updated)
         {
             return false;
@@ -44,9 +44,9 @@ public class BookingService : IBookingService
         return true;
     }
 
-    public async Task<bool> DeleteBookingAsync(int id)
+    public async Task<bool> DeleteBookingAsync(int id, uint? expectedVersion = null)
     {
-        var removed = await _repository.RemoveAsync(id);
+        var removed = await _repository.RemoveAsync(id, expectedVersion);
         if (!removed)
         {
             return false;

@@ -48,4 +48,21 @@ internal static class ErrorHandler
         Type = "https://tools.ietf.org/html/rfc9110#section-15.5.10",
         Detail = detail
     };
+
+    /// <summary>409 — the booking changed after the client read it.</summary>
+    public static ProblemDetails BookingChanged() => Conflict(
+        "This booking was changed or removed by another request. Refresh the data and try again.");
+
+    /// <summary>409 — another booking now occupies the requested room and time.</summary>
+    public static ProblemDetails RoomUnavailable() => Conflict(
+        "The room is no longer available for the requested dates. Choose a different time.");
+
+    /// <summary>412 — the request is missing the required If-Match header.</summary>
+    public static ProblemDetails PreconditionRequired() => new()
+    {
+        Status = StatusCodes.Status412PreconditionFailed,
+        Title = "Precondition required",
+        Type = "https://tools.ietf.org/html/rfc9110#section-13.1.1",
+        Detail = "An If-Match header with the last known ETag is required for this request."
+    };
 }

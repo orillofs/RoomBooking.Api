@@ -20,7 +20,8 @@ public class BookingRepository : IBookingRepository
         UserId = booking.UserId,
         RoomId = booking.RoomId,
         StartDate = booking.StartDate,
-        EndDate = booking.EndDate
+        EndDate = booking.EndDate,
+        Version = booking.Version
     };
 
     private static BookingEntity MapToEntity(BookingRequest dto) => new()
@@ -62,12 +63,17 @@ public class BookingRepository : IBookingRepository
         return MapToResponse(booking);
     }
 
-    public async Task<bool> UpdateAsync(int id, BookingRequest bookingRequest)
+    public async Task<bool> UpdateAsync(int id, BookingRequest bookingRequest, uint? expectedVersion = null)
     {
         var booking = await _context.Bookings.FindAsync(id);
         if (booking is null)
         {
             return false;
+        }
+
+        if (expectedVersion.HasValue)
+        {
+            _context.Entry(booking).Property("Version").OriginalValue = expectedVersion.Value;
         }
 
         booking.UserId = bookingRequest.UserId;
@@ -79,12 +85,17 @@ public class BookingRepository : IBookingRepository
         return true;
     }
 
-    public async Task<bool> RemoveAsync(int id)
+    public async Task<bool> RemoveAsync(int id, uint? expectedVersion = null)
     {
         var booking = await _context.Bookings.FindAsync(id);
         if (booking is null)
         {
             return false;
+        }
+
+        if (expectedVersion.HasValue)
+        {
+            _context.Entry(booking).Property("Version").OriginalValue = expectedVersion.Value;
         }
 
         _context.Bookings.Remove(booking);

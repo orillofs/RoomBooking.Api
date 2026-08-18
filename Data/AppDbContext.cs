@@ -17,6 +17,10 @@ public class AppDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.Entity<Booking>()
+            .Property(b => b.Version)
+            .IsRowVersion();
+
+        builder.Entity<Booking>()
             .HasOne(b => b.Room)
             .WithMany()
             .HasForeignKey(b => b.RoomId);
