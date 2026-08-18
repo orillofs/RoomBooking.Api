@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Net.Http.Headers;
 using Npgsql;
-using RoomBooking.Api.Auth;
+using RoomBooking.Api.Authentication;
 using RoomBooking.Api.Middlewares;
 using RoomBooking.Api.Models.DTOs;
 using RoomBooking.Api.Services.Booking;

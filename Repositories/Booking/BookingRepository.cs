@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using RoomBooking.Api.Auth;
+using RoomBooking.Api.Authentication;
 using RoomBooking.Api.Data;
 using RoomBooking.Api.Models.DTOs;
 using BookingEntity = RoomBooking.Api.Models.Entities.Booking;

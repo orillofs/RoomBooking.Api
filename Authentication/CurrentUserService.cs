@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 
-namespace RoomBooking.Api.Auth;
+namespace RoomBooking.Api.Authentication;
 
 public class CurrentUserService : ICurrentUser
 {

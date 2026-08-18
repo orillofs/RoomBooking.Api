@@ -1,4 +1,4 @@
-namespace RoomBooking.Api.Auth;
+namespace RoomBooking.Api.Authentication;
 
 /// <summary>
 /// Thrown by the service layer when an authenticated caller tries to read or
