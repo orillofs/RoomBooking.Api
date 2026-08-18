@@ -1,36 +1,64 @@
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using RoomBooking.Api.Auth;
+using RoomBooking.Api.Authentication;
 using RoomBooking.Api.Data;
+using RoomBooking.Api.Models.Entities;
 using RoomBooking.Api.Repositories.Booking;
+using RoomBooking.Api.Services.Auth;
 using RoomBooking.Api.Services.Booking;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
-// Dev-only authentication: maps a bearer token to a seeded user (see Auth/DevAuthHandler).
-builder.Services.AddAuthentication("DevAuth")
+// Real authentication: JWT bearer tokens issued by /signin and /signup. The
+// signing key comes from the "Jwt" configuration section (dev value in
+// appsettings.json; override via user secrets or environment before going live).
+var jwtSettings = builder.Configuration
+    .GetSection(JwtSettings.SectionName)
+    .Get<JwtSettings>() ?? new JwtSettings();
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
+
+builder.Services.AddAuthentication("JwtBearer")
+    .AddJwtBearer("JwtBearer", options =>
+        options.TokenValidationParameters = TokenValidator.CreateParameters(jwtSettings))
+    // Dev-only fallback: maps a bearer token to a seeded user (Authentication/DevAuthHandler).
     .AddScheme<AuthenticationSchemeOptions, DevAuthHandler>("DevAuth", _ => { });
-builder.Services.AddAuthorization();
+
+// The default policy accepts either scheme, so existing DevAuth tokens keep
+// working during development while JWT becomes the real one.
+builder.Services.AddAuthorization(options =>
+{
+    options.DefaultPolicy = new AuthorizationPolicyBuilder()
+        .AddAuthenticationSchemes("JwtBearer", "DevAuth")
+        .RequireAuthenticatedUser()
+        .Build();
+});
+
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUser, CurrentUserService>();
 
-// Enable the RFC 7807 problem-details contract for validation errors and unhandled exceptions.
 builder.Services.AddProblemDetails();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Token issuance and authentication
+builder.Services.AddSingleton<TokenGenerator>();
+builder.Services.AddScoped<TokenProvider>();
+builder.Services.AddSingleton<TokenValidator>();
+builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();

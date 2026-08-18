@@ -1,5 +1,3 @@
-using System;
-
 namespace RoomBooking.Api.Models.Entities;
 
 public class User
@@ -10,4 +8,6 @@ public class User
     public int RoleId { get; set; }
     public UserRole UserRole { get; set; } = null!;
 
+    /// <summary>PBKDF2 hash produced by PasswordHasher&lt;User&gt; at signup/signin.</summary>
+    public string PasswordHash { get; set; } = "";
 }
