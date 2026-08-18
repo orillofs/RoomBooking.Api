@@ -29,7 +29,6 @@ public class BookingControllerConcurrencyTests
 
     private static BookingRequest SampleRequest() => new()
     {
-        UserId = 2,
         RoomId = 2,
         StartDate = new DateTime(2027, 4, 1, 9, 0, 0, DateTimeKind.Utc),
         EndDate = new DateTime(2027, 4, 1, 10, 0, 0, DateTimeKind.Utc)

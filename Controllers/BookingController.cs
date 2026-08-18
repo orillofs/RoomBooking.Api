@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Net.Http.Headers;
 using Npgsql;
+using RoomBooking.Api.Auth;
 using RoomBooking.Api.Middlewares;
 using RoomBooking.Api.Models.DTOs;
 using RoomBooking.Api.Services.Booking;
@@ -9,6 +11,7 @@ using RoomBooking.Api.Services.Booking;
 namespace RoomBooking.Api.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class BookingController : ControllerBase
 {
@@ -29,14 +32,21 @@ public class BookingController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
-        var booking = await _bookingService.GetBookingByIdAsync(id);
-        if (booking is null)
+        try
         {
-            return NotFound(ErrorHandler.NotFound(id, "Booking"));
-        }
+            var booking = await _bookingService.GetBookingByIdAsync(id);
+            if (booking is null)
+            {
+                return NotFound(ErrorHandler.NotFound(id, "Booking"));
+            }
 
-        AddETag(booking.Version);
-        return Ok(booking);
+            AddETag(booking.Version);
+            return Ok(booking);
+        }
+        catch (ForbiddenAccessException ex)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, ErrorHandler.Forbidden(ex.Message));
+        }
     }
 
     [HttpPost]
@@ -97,6 +107,10 @@ public class BookingController : ControllerBase
 
             return NoContent();
         }
+        catch (ForbiddenAccessException ex)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, ErrorHandler.Forbidden(ex.Message));
+        }
         catch (DbUpdateConcurrencyException)
         {
             return Conflict(ErrorHandler.BookingChanged());
@@ -121,6 +135,10 @@ public class BookingController : ControllerBase
             }
 
             return NoContent();
+        }
+        catch (ForbiddenAccessException ex)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, ErrorHandler.Forbidden(ex.Message));
         }
         catch (DbUpdateConcurrencyException)
         {

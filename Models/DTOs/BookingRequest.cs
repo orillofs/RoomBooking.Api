@@ -5,9 +5,8 @@ namespace RoomBooking.Api.Models.DTOs;
 
 public class BookingRequest
 {
-    [Required]
-    [Range(1, int.MaxValue, ErrorMessage = "UserId must be a valid positive id.")]
-    public int UserId { get; set; }
+    // Ownership is never client-supplied: the authenticated caller's id is
+    // assigned in the service layer (see BookingService.CreateBookingAsync).
 
     [Required]
     [Range(1, int.MaxValue, ErrorMessage = "RoomId must be a valid positive id.")]
