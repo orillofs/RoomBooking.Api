@@ -32,6 +32,8 @@ public class BookingEndpointConcurrencyTests : IAsyncLifetime
 
         _factory = new TestAppFactory(_connectionString);
         _client = _factory.CreateClient();
+        _client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", "user-token");
     }
 
     public async Task InitializeAsync()
@@ -133,7 +135,6 @@ public class BookingEndpointConcurrencyTests : IAsyncLifetime
         {
             Content = JsonContent.Create(new
             {
-                UserId = 2,
                 RoomId = 2,
                 StartDate = new DateTime(2027, 7, 1, 9, 0, 0, DateTimeKind.Utc),
                 EndDate = new DateTime(2027, 7, 1, 11, 0, 0, DateTimeKind.Utc)
@@ -153,7 +154,6 @@ public class BookingEndpointConcurrencyTests : IAsyncLifetime
     {
         var payload = JsonContent.Create(new
         {
-            UserId = 2,
             RoomId = 2,
             StartDate = start,
             EndDate = end
@@ -178,7 +178,6 @@ public class BookingEndpointConcurrencyTests : IAsyncLifetime
         {
             Content = JsonContent.Create(new
             {
-                UserId = 2,
                 RoomId = 2,
                 StartDate = start,
                 EndDate = end
