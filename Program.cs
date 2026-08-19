@@ -44,6 +44,16 @@ builder.Services.AddScoped<ICurrentUser, CurrentUserService>();
 
 builder.Services.AddProblemDetails();
 
+// Dev-only CORS: allow the Vite dev server (5173) to call the API during
+// development. Tighten to specific origins before production.
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("DevClient", policy =>
+        policy.WithOrigins("http://localhost:5173")
+            .AllowAnyHeader()
+            .AllowAnyMethod());
+});
+
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -65,6 +75,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("DevClient");
 
 app.UseAuthentication();
 app.UseAuthorization();
