@@ -21,7 +21,10 @@ public class TokenRoundTripTests
         ExpirationMinutes = 60
     };
 
-    private static TokenOptions Options(DateTime expiresAt, params Claim[] claims)
+    private static TokenOptions CreateOptions(DateTime expiresAt, params Claim[] claims)
+        => CreateOptions(expiresAt, DateTime.UtcNow.AddMinutes(-1), claims);
+
+    private static TokenOptions CreateOptions(DateTime expiresAt, DateTime notBefore, params Claim[] claims)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Settings.SecretKey));
         return new TokenOptions
@@ -29,7 +32,7 @@ public class TokenRoundTripTests
             Claims = claims,
             Issuer = Settings.Issuer,
             Audience = Settings.Audience,
-            NotBefore = DateTime.UtcNow.AddMinutes(-1),
+            NotBefore = notBefore,
             ExpiresAt = expiresAt,
             SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
         };
@@ -38,7 +41,7 @@ public class TokenRoundTripTests
     [Fact]
     public void Validate_RoundTripsACurrentlyValidToken()
     {
-        var token = new TokenGenerator().GenerateToken(Options(
+        var token = new TokenGenerator().GenerateToken(CreateOptions(
             DateTime.UtcNow.AddMinutes(30),
             new Claim(ClaimTypes.NameIdentifier, "7"),
             new Claim(ClaimTypes.Name, "sam@fullscale.ph"),
@@ -55,8 +58,11 @@ public class TokenRoundTripTests
     [Fact]
     public void Validate_ExpiredToken_ReturnsNull()
     {
-        var token = new TokenGenerator().GenerateToken(Options(
+        // A genuinely expired token: notBefore and expires are both in the past,
+        // with notBefore before expires so the JWT stays well-formed.
+        var token = new TokenGenerator().GenerateToken(CreateOptions(
             DateTime.UtcNow.AddMinutes(-10),
+            DateTime.UtcNow.AddMinutes(-20),
             new Claim(ClaimTypes.NameIdentifier, "7")));
 
         var principal = new TokenValidator(Options.Create(Settings)).Validate(token);
@@ -75,7 +81,7 @@ public class TokenRoundTripTests
             ExpirationMinutes = 60
         };
 
-        var token = new TokenGenerator().GenerateToken(Options(
+        var token = new TokenGenerator().GenerateToken(CreateOptions(
             DateTime.UtcNow.AddMinutes(30),
             new Claim(ClaimTypes.NameIdentifier, "7")));
 
